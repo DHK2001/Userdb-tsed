@@ -3,8 +3,9 @@ import { BadRequest, NotFound } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
-import { CreateUserDto } from "src/models/CreateUserDto.js";
 import { ResponseAPi } from "src/models/Response.js";
+import { CreateUserDto, UpdateUserDto } from "src/models/UserModels.js";
+import { converBcryptPassword } from "src/utils/helpers.js";
 import { DataSource, Repository } from "typeorm";
 
 @Injectable()
@@ -63,18 +64,18 @@ export class UsersService {
 
   async createUser(createUserDto: CreateUserDto): Promise<ResponseAPi> {
     try {
-      const userCreated = await this.usersRepository.save(createUserDto);
-      const createdUser = {
-        id: userCreated.id,
-        firstName: userCreated.firstName,
-        lastName: userCreated.lastName,
-        email: userCreated.email,
-        creationDate: userCreated.creationDate
+      const hashedPassword = await converBcryptPassword(createUserDto.password);
+      const createUser = {
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+        email: createUserDto.email,
+        password_bcrypt: hashedPassword
       };
+      const userSave = await this.usersRepository.save(createUser);
       return {
         success: true,
         message: "User created",
-        data: createdUser,
+        data: userSave,
         error: null
       };
     } catch (error) {
@@ -83,7 +84,7 @@ export class UsersService {
     }
   }
 
-  async update(id: string, user: Partial<CreateUserDto>): Promise<ResponseAPi> {
+  async update(id: string, user: Partial<UpdateUserDto>): Promise<ResponseAPi> {
     try {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
 

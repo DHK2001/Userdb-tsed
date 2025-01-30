@@ -1,8 +1,8 @@
 import { Controller, Inject } from "@tsed/di";
 import { BodyParams, PathParams } from "@tsed/platform-params";
 import { Delete, Get, Groups, Post, Put, Returns } from "@tsed/schema";
-import { CreateUserDto } from "src/models/CreateUserDto.js";
 import { ResponseAPi } from "src/models/Response.js";
+import { CreateUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
 import { UsersService } from "./Services.js";
 
@@ -28,7 +28,7 @@ export class UsersController {
   }
 
   @Put("/:id")
-  async update(@PathParams("id") id: string, @BodyParams() @Groups("update") user: CreateUserDto): Promise<ResponseAPi> {
+  async update(@PathParams("id") id: string, @BodyParams() @Groups("update") user: UpdateUserDto): Promise<ResponseAPi> {
     return await this.usersService.update(id, user);
   }
 

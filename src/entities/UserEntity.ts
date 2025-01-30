@@ -1,4 +1,4 @@
-import { Email, Format, Groups, MaxLength, MinLength, Property, Required } from "@tsed/schema";
+import { Email, MaxLength, MinLength, Property, Required } from "@tsed/schema";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export enum RoleType {
@@ -29,6 +29,10 @@ export class User {
   @Required()
   @Email()
   email!: string;
+
+  @Column()
+  @Required()
+  password_bcrypt!: string;
 
   @CreateDateColumn()
   @Required()
