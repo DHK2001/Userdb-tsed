@@ -16,6 +16,7 @@ export const mssqlDatasource = new DataSource({
   options: {
     encrypt: true
   },
+  entities: ["src/entities/*.{ts,js}"],
   synchronize: false
 });
 
