@@ -44,6 +44,11 @@ export class UsersService {
   async getById(id: string): Promise<ResponseAPi> {
     try {
       const user = await this.usersRepository.findOne({ where: { id } });
+
+      if (!user) {
+        throw new NotFound("User not found");
+      }
+
       return {
         success: true,
         message: "User found",
@@ -51,7 +56,10 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      throw new NotFound("User not found");
+      if (error instanceof NotFound) {
+        throw new NotFound("User not found");
+      }
+      throw new BadRequest("An error occurred while fetching the user");
     }
   }
 
@@ -72,7 +80,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      throw new BadRequest("Bad request in user creation.");
+      throw new BadRequest("An error occurred while fetching the user");
     }
   }
 
@@ -81,16 +89,10 @@ export class UsersService {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
 
       if (!existingUser) {
-        return {
-          success: false,
-          message: "User not found",
-          data: null,
-          error: `The user with the id ${id} does not exist.`
-        };
+        throw new NotFound("User not found");
       }
 
       const updatedUser = this.usersRepository.merge(existingUser, user);
-
       const data = await this.usersRepository.save(updatedUser);
       return {
         success: true,
@@ -99,22 +101,22 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      throw new NotFound("User not found");
+      if (error instanceof NotFound) {
+        throw new NotFound("User not found");
+      }
+      throw new BadRequest("An error occurred while fetching the user");
     }
   }
 
   async remove(id: string): Promise<ResponseAPi> {
     try {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
+
       if (!existingUser) {
-        return {
-          success: false,
-          message: "User not found",
-          data: null,
-          error: `The user with the id ${id} does not exist.`
-        };
+        throw new NotFound("User not found");
       }
-      const data = await this.usersRepository.delete(existingUser.id);
+
+      await this.usersRepository.delete(existingUser.id);
       return {
         success: true,
         message: "User deleted",
@@ -122,7 +124,10 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      throw new NotFound("User not found");
+      if (error instanceof NotFound) {
+        throw new NotFound("User not found");
+      }
+      throw new BadRequest("An error occurred while fetching the user");
     }
   }
 }
