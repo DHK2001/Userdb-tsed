@@ -22,7 +22,7 @@ import * as rest from "./controllers/rest/index.js";
     returnsCoercedValues: true
   },
   mount: {
-    "/rest": [...Object.values(rest)],
+    "/v1": [...Object.values(rest)],
     "/": [...Object.values(pages)]
   },
   swagger: [
