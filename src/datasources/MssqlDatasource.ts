@@ -1,16 +1,22 @@
 import { registerProvider } from "@tsed/di";
 import { Logger } from "@tsed/logger";
+import * as dotenv from "dotenv";
 import { DataSource } from "typeorm";
+
+dotenv.config();
 
 export const MssqlDatasource = Symbol.for("MssqlDatasource");
 export type MssqlDatasource = DataSource;
 export const mssqlDatasource = new DataSource({
   type: "mssql",
-  entities: [],
-  host: "localhost",
-  username: "sa",
-  password: "Admin12345",
-  database: "tempdb"
+  host: process.env.HOST_NAME,
+  username: process.env.USER_NAME,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE_NAME,
+  options: {
+    encrypt: true
+  },
+  synchronize: false
 });
 
 registerProvider<DataSource>({
