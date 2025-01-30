@@ -12,6 +12,7 @@ import { isProduction } from "./config/envs/index.js";
 import { config } from "./config/index.js";
 import * as pages from "./controllers/pages/index.js";
 import * as rest from "./controllers/rest/index.js";
+import CustomMiddleware from "./middleware/CustomMiddleware.js";
 
 @Configuration({
   ...config,
@@ -53,4 +54,8 @@ import * as rest from "./controllers/rest/index.js";
 })
 export class Server {
   protected app = application();
+
+  $beforeRoutesInit() {
+    this.app.use(CustomMiddleware);
+  }
 }
