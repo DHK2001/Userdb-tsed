@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@tsed/di";
+import { BadRequest, NotFound } from "@tsed/exceptions";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
 import { CreateUserDto } from "src/models/CreateUserDto.js";
@@ -43,14 +44,6 @@ export class UsersService {
   async getById(id: string): Promise<ResponseAPi> {
     try {
       const user = await this.usersRepository.findOne({ where: { id } });
-      if (!user) {
-        return {
-          success: false,
-          message: "User not found",
-          data: null,
-          error: `The user with the id ${id} does not exist.`
-        };
-      }
       return {
         success: true,
         message: "User found",
@@ -58,12 +51,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      return {
-        success: false,
-        message: "Error getting user",
-        data: null,
-        error: error.message
-      };
+      throw new NotFound("User not found");
     }
   }
 
@@ -84,12 +72,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      return {
-        success: false,
-        message: "Error creating user",
-        data: null,
-        error: error.message
-      };
+      throw new BadRequest("Bad request in user creation.");
     }
   }
 
@@ -116,12 +99,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      return {
-        success: false,
-        message: "Error updating user",
-        data: null,
-        error: error.message
-      };
+      throw new NotFound("User not found");
     }
   }
 
@@ -144,12 +122,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      return {
-        success: false,
-        message: "Error deleting user",
-        data: null,
-        error: error.message
-      };
+      throw new NotFound("User not found");
     }
   }
 }
