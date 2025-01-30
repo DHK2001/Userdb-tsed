@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@tsed/di";
 import { BadRequest, NotFound } from "@tsed/exceptions";
+import { Logger } from "@tsed/logger";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
 import { CreateUserDto } from "src/models/CreateUserDto.js";
@@ -8,13 +9,14 @@ import { DataSource, Repository } from "typeorm";
 
 @Injectable()
 export class UsersService {
+  @Inject()
+  logger: Logger;
   @Inject(MssqlDatasource)
   protected mysqlDataSource: DataSource;
   private usersRepository: Repository<User>;
 
   async $onInit() {
     if (this.mysqlDataSource.isInitialized) {
-      console.log("Connected with typeorm to database: Mssql");
       this.usersRepository = this.mysqlDataSource.getRepository(User);
     } else {
       console.error("Datasource not connected");
@@ -32,12 +34,8 @@ export class UsersService {
         error: null
       };
     } catch (error) {
-      return {
-        success: false,
-        message: "Error getting users",
-        data: null,
-        error: error.message
-      };
+      this.logger.error("UsersServices: ", `getAll Error: ${error}`);
+      throw new BadRequest("An error occurred while fetching all users");
     }
   }
 
@@ -56,6 +54,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
+      this.logger.error("UsersServices: ", `getById Error: ${error}`);
       if (error instanceof NotFound) {
         throw new NotFound("User not found");
       }
@@ -80,6 +79,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
+      this.logger.error("UsersServices: ", `createUser Error: ${error}`);
       throw new BadRequest("An error occurred while fetching the user");
     }
   }
@@ -101,6 +101,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
+      this.logger.error("UsersServices: ", `update Error: ${error}`);
       if (error instanceof NotFound) {
         throw new NotFound("User not found");
       }
@@ -124,6 +125,7 @@ export class UsersService {
         error: null
       };
     } catch (error) {
+      this.logger.error("UsersServices: ", `remove Error: ${error}`);
       if (error instanceof NotFound) {
         throw new NotFound("User not found");
       }

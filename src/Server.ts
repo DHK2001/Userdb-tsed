@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { Configuration } from "@tsed/di";
 import { application } from "@tsed/platform-http";
 
+import { isProduction } from "./config/envs/index.js";
 import { config } from "./config/index.js";
 import * as pages from "./controllers/pages/index.js";
 import * as rest from "./controllers/rest/index.js";
@@ -45,7 +46,10 @@ import * as rest from "./controllers/rest/index.js";
       ejs: "ejs"
     }
   },
-  exclude: ["**/*.spec.ts"]
+  exclude: ["**/*.spec.ts"],
+  logger: {
+    disableRoutesSummary: isProduction
+  }
 })
 export class Server {
   protected app = application();
