@@ -43,3 +43,8 @@ export class loginUserDto {
   @Required()
   password: string;
 }
+
+export class loginResponseDto {
+  @Required()
+  accessToken: string;
+}

@@ -9,9 +9,21 @@ export default class CustomMiddleware implements MiddlewareMethods {
   acceptMimes: string[];
 
   use(@Context() $ctx: Context) {
-    console.log("AcceptMimesMiddleware: ", $ctx.request.accepts(this.acceptMimes));
     if (!$ctx.request.accepts(this.acceptMimes)) {
       throw new NotAcceptable("Accepted mimes are: " + this.acceptMimes.join(", "));
     }
+
+    this.verifyAccessToken($ctx);
+  }
+
+  verifyAccessToken(ctx: Context) {
+    console.log("verifyAccessToken");
+    return;
+    const token = ctx.request.headers.authorization;
+
+    if (!token) {
+      throw new Error("Access token is missing");
+    }
+    console.log(`Token provided: ${token}`);
   }
 }

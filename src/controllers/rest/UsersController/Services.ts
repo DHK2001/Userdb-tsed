@@ -1,12 +1,16 @@
 import { Inject, Injectable } from "@tsed/di";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, NotFound, Unauthorized } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
+import * as dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
 import { ResponseAPi } from "src/models/Response.js";
 import { CreateUserDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 import { converBcryptPassword, verifyPassword } from "src/utils/helpers.js";
 import { DataSource, Repository } from "typeorm";
+
+dotenv.config();
 
 @Injectable()
 export class UsersService {
@@ -120,24 +124,41 @@ export class UsersService {
       const isMatch = await verifyPassword(loginUserDto.password, user.password_bcrypt);
 
       if (isMatch) {
+        console.log("User logged in", process.env.SECRET_KEY);
+        const secretKey = process.env.SECRET_KEY;
+        const payloadToken = {
+          id: user.id,
+          email: user.email,
+          password: user.password_bcrypt
+        };
+        const expirationTime = Math.floor(Date.now() / 1000) + 30; // 30 seconds
+        //const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour
+        var token = jwt.sign(
+          {
+            exp: expirationTime,
+            foo: payloadToken
+          },
+          secretKey ?? ""
+        );
+
         return {
           success: true,
           message: "User logged in",
-          data: true,
+          data: {
+            accessToken: token
+          },
           error: null
         };
       } else {
-        return {
-          success: true,
-          message: "Invalid credentials",
-          data: false,
-          error: null
-        };
+        throw new Unauthorized("Invalid credentials");
       }
     } catch (error) {
       this.logger.error("UsersServices: ", `loginUser Error: ${error}`);
       if (error instanceof NotFound) {
         throw new NotFound("User not found");
+      }
+      if (error instanceof Unauthorized) {
+        throw new Unauthorized("Invalid credentials");
       }
       throw new BadRequest("An error occurred while fetching the user");
     }
