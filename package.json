@@ -8,7 +8,10 @@
     "start": "npm run barrels && nodemon src/index.ts",
     "start:prod": "cross-env NODE_ENV=production node --import @swc-node/register/esm-register src/index.js",
     "test": "npm run test:lint",
-    "typeorm": "typeorm-ts-node-commonjs",
+    "typeorm": "typeorm-ts-node-esm -d ./src/datasources/MssqlDatasource.ts",
+    "mig:gen": "npm run typeorm migration:generate",
+    "mig:run": "npm run typeorm migration:run",
+    "mig:rev": "npm run typeorm migration:revert",
     "test:lint": "eslint",
     "test:lint:fix": "eslint --fix",
     "prettier": "prettier '**/*.{json,md,yml,yaml}' --write"
@@ -49,7 +52,7 @@
     "dotenv-flow": "^4.1.0",
     "express": "^4.21.2",
     "method-override": "^3.0.0",
-    "mssql": "^11.0.1",
+    "mssql": "^10.0.4",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
@@ -71,6 +74,7 @@
     "globals": "^15.14.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.4.2",
+    "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typeorm": "^0.3.20"
   },
