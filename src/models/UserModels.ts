@@ -34,3 +34,12 @@ export class UpdateUserDto {
   @Email()
   email: string;
 }
+
+export class loginUserDto {
+  @Required()
+  @Email()
+  email: string;
+
+  @Required()
+  password: string;
+}

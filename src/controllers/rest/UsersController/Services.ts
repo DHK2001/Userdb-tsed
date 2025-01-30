@@ -4,8 +4,8 @@ import { Logger } from "@tsed/logger";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
 import { ResponseAPi } from "src/models/Response.js";
-import { CreateUserDto, UpdateUserDto } from "src/models/UserModels.js";
-import { converBcryptPassword } from "src/utils/helpers.js";
+import { CreateUserDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
+import { converBcryptPassword, verifyPassword } from "src/utils/helpers.js";
 import { DataSource, Repository } from "typeorm";
 
 @Injectable()
@@ -102,6 +102,40 @@ export class UsersService {
       };
     } catch (error) {
       this.logger.error("UsersServices: ", `update Error: ${error}`);
+      if (error instanceof NotFound) {
+        throw new NotFound("User not found");
+      }
+      throw new BadRequest("An error occurred while fetching the user");
+    }
+  }
+
+  async loginUser(loginUserDto: loginUserDto): Promise<ResponseAPi> {
+    try {
+      const user = await this.usersRepository.findOne({ where: { email: loginUserDto.email } });
+
+      if (!user) {
+        throw new NotFound("User not found");
+      }
+
+      const isMatch = await verifyPassword(loginUserDto.password, user.password_bcrypt);
+
+      if (isMatch) {
+        return {
+          success: true,
+          message: "User logged in",
+          data: true,
+          error: null
+        };
+      } else {
+        return {
+          success: true,
+          message: "Invalid credentials",
+          data: false,
+          error: null
+        };
+      }
+    } catch (error) {
+      this.logger.error("UsersServices: ", `loginUser Error: ${error}`);
       if (error instanceof NotFound) {
         throw new NotFound("User not found");
       }
