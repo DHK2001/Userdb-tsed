@@ -19,7 +19,6 @@ export class UsersService {
     if (this.mysqlDataSource.isInitialized) {
       this.usersRepository = this.mysqlDataSource.getRepository(User);
     } else {
-      console.error("Datasource not connected");
       throw new Error("Datasource not connected");
     }
   }
