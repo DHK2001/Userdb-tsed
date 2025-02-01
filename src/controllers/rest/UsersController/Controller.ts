@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@tsed/di";
 import { BodyParams, HeaderParams, PathParams } from "@tsed/platform-params";
-import { Delete, Get, Groups, Post, Put, Returns } from "@tsed/schema";
+import { Delete, Get, Post, Put, Returns } from "@tsed/schema";
 import { ResponseAPi } from "src/models/Response.js";
 import { CreateUserDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
@@ -26,7 +26,7 @@ export class UsersController {
 
   @Post()
   @Returns(201, ResponseAPi)
-  async create(@BodyParams() @Groups("creation") createUserDto: CreateUserDto): Promise<ResponseAPi> {
+  async create(@BodyParams() createUserDto: CreateUserDto): Promise<ResponseAPi> {
     return await this.usersService.createUser(createUserDto);
   }
 
@@ -40,7 +40,7 @@ export class UsersController {
   @Returns(200, ResponseAPi)
   async update(
     @PathParams("id") id: string,
-    @BodyParams() @Groups("update") user: UpdateUserDto,
+    @BodyParams() user: UpdateUserDto,
     @HeaderParams("authorization-token") token: string
   ): Promise<ResponseAPi> {
     console.log(`Token received in PUT /users/:id: ${token}`);
