@@ -29,6 +29,11 @@ export class UsersController {
     return await this.usersService.createUser(createUserDto);
   }
 
+  @Post("/loginUser")
+  async loginUser(@BodyParams() loginUserDto: loginUserDto): Promise<ResponseAPi> {
+    return await this.usersService.loginUser(loginUserDto);
+  }
+
   @Put("/:id")
   async update(
     @PathParams("id") id: string,
