@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@tsed/di";
-import { BodyParams, PathParams } from "@tsed/platform-params";
-import { Delete, email, Get, Groups, Post, Put, Returns } from "@tsed/schema";
+import { BodyParams, HeaderParams, PathParams } from "@tsed/platform-params";
+import { Delete, Get, Groups, Post, Put, Returns } from "@tsed/schema";
 import { ResponseAPi } from "src/models/Response.js";
 import { CreateUserDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
@@ -12,12 +12,14 @@ export class UsersController {
   private readonly usersService: UsersService;
 
   @Get("/")
-  async get() {
+  async get(@HeaderParams("authorization-token") token: string) {
+    console.log(`Token received in GET /users: ${token}`);
     return await this.usersService.getAll();
   }
 
   @Get("/:id")
-  async getById(@PathParams("id") id: string) {
+  async getById(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string) {
+    console.log(`Token received in GET /users/:id: ${token}`);
     return await this.usersService.getById(id);
   }
 
@@ -27,18 +29,19 @@ export class UsersController {
     return await this.usersService.createUser(createUserDto);
   }
 
-  @Post("/loginUser")
-  async loginUser(@BodyParams() loginUserDto: loginUserDto): Promise<ResponseAPi> {
-    return await this.usersService.loginUser(loginUserDto);
-  }
-
   @Put("/:id")
-  async update(@PathParams("id") id: string, @BodyParams() @Groups("update") user: UpdateUserDto): Promise<ResponseAPi> {
+  async update(
+    @PathParams("id") id: string,
+    @BodyParams() @Groups("update") user: UpdateUserDto,
+    @HeaderParams("authorization-token") token: string
+  ): Promise<ResponseAPi> {
+    console.log(`Token received in PUT /users/:id: ${token}`);
     return await this.usersService.update(id, user);
   }
 
   @Delete("/:id")
-  async remove(@PathParams("id") id: string) {
+  async remove(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string) {
+    console.log(`Token received in DELETE /users/:id: ${token}`);
     return await this.usersService.remove(id);
   }
 }

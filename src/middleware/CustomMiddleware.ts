@@ -13,17 +13,18 @@ export default class CustomMiddleware implements MiddlewareMethods {
       throw new NotAcceptable("Accepted mimes are: " + this.acceptMimes.join(", "));
     }
 
-    this.verifyAccessToken($ctx);
+    const method = $ctx.request.method.toUpperCase();
+    if (["GET", "PUT", "DELETE"].includes(method)) {
+      this.verifyAccessToken($ctx);
+    }
   }
 
   verifyAccessToken(ctx: Context) {
-    console.log("verifyAccessToken");
-    return;
-    const token = ctx.request.headers.authorization;
-
-    if (!token) {
-      throw new Error("Access token is missing");
+    const token = ctx.request.headers["authorization-token"];
+    if (token) {
+      console.log(`Authorization Token: ${token}`);
+    } else {
+      console.warn("No Authorization Token provided");
     }
-    console.log(`Token provided: ${token}`);
   }
 }
