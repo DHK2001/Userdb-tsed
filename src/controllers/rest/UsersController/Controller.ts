@@ -12,6 +12,7 @@ export class UsersController {
   private readonly usersService: UsersService;
 
   @Get("/")
+  @Returns(200, ResponseAPi)
   async get(@HeaderParams("authorization-token") token: string) {
     console.log(`Token received in GET /users: ${token}`);
     return await this.usersService.getAll();
@@ -24,17 +25,19 @@ export class UsersController {
   }
 
   @Post()
-  @Returns(201)
+  @Returns(201, ResponseAPi)
   async create(@BodyParams() @Groups("creation") createUserDto: CreateUserDto): Promise<ResponseAPi> {
     return await this.usersService.createUser(createUserDto);
   }
 
   @Post("/loginUser")
+  @Returns(200, ResponseAPi)
   async loginUser(@BodyParams() loginUserDto: loginUserDto): Promise<ResponseAPi> {
     return await this.usersService.loginUser(loginUserDto);
   }
 
   @Put("/:id")
+  @Returns(200, ResponseAPi)
   async update(
     @PathParams("id") id: string,
     @BodyParams() @Groups("update") user: UpdateUserDto,
@@ -45,6 +48,7 @@ export class UsersController {
   }
 
   @Delete("/:id")
+  @Returns(200, ResponseAPi)
   async remove(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string) {
     console.log(`Token received in DELETE /users/:id: ${token}`);
     return await this.usersService.remove(id);

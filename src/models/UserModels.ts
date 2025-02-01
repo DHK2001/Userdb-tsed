@@ -1,4 +1,5 @@
 import { Email, MaxLength, MinLength, Required } from "@tsed/schema";
+import { Property } from "@tsed/schema";
 
 export class CreateUserDto {
   @Required()
@@ -45,6 +46,6 @@ export class loginUserDto {
 }
 
 export class loginResponseDto {
-  @Required()
+  @Property()
   accessToken: string;
 }
