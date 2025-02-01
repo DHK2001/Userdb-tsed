@@ -5,8 +5,7 @@ import * as dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { User } from "src/entities/UserEntity.js";
-import { ResponseAPi } from "src/models/Response.js";
-import { CreateUserDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
+import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 import { converBcryptPassword, verifyPassword } from "src/utils/helpers.js";
 import { DataSource, Repository } from "typeorm";
 
@@ -28,22 +27,17 @@ export class UsersService {
     }
   }
 
-  async getAll(): Promise<ResponseAPi> {
+  async getAll(): Promise<User[]> {
     try {
       const users = await this.usersRepository.find();
-      return {
-        success: true,
-        message: "Users found",
-        data: users,
-        error: null
-      };
+      return users;
     } catch (error) {
       this.logger.error("UsersServices: ", `getAll Error: ${error}`);
       throw new BadRequest("An error occurred while fetching all users");
     }
   }
 
-  async getById(id: string): Promise<ResponseAPi> {
+  async getById(id: string): Promise<User> {
     try {
       const user = await this.usersRepository.findOne({ where: { id } });
 
@@ -51,12 +45,7 @@ export class UsersService {
         throw new NotFound("User not found");
       }
 
-      return {
-        success: true,
-        message: "User found",
-        data: user,
-        error: null
-      };
+      return user;
     } catch (error) {
       this.logger.error("UsersServices: ", `getById Error: ${error}`);
       if (error instanceof NotFound) {
@@ -66,7 +55,7 @@ export class UsersService {
     }
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<ResponseAPi> {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
     try {
       const hashedPassword = await converBcryptPassword(createUserDto.password);
       const createUser = {
@@ -76,19 +65,14 @@ export class UsersService {
         password_bcrypt: hashedPassword
       };
       const userSave = await this.usersRepository.save(createUser);
-      return {
-        success: true,
-        message: "User created",
-        data: userSave,
-        error: null
-      };
+      return userSave;
     } catch (error) {
       this.logger.error("UsersServices: ", `createUser Error: ${error}`);
       throw new BadRequest("An error occurred while fetching the user");
     }
   }
 
-  async update(id: string, user: Partial<UpdateUserDto>): Promise<ResponseAPi> {
+  async update(id: string, user: Partial<UpdateUserDto>): Promise<User> {
     try {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
 
@@ -98,12 +82,7 @@ export class UsersService {
 
       const updatedUser = this.usersRepository.merge(existingUser, user);
       const data = await this.usersRepository.save(updatedUser);
-      return {
-        success: true,
-        message: "User updated",
-        data,
-        error: null
-      };
+      return data;
     } catch (error) {
       this.logger.error("UsersServices: ", `update Error: ${error}`);
       if (error instanceof NotFound) {
@@ -113,7 +92,7 @@ export class UsersService {
     }
   }
 
-  async loginUser(loginUserDto: loginUserDto): Promise<ResponseAPi> {
+  async loginUser(loginUserDto: loginUserDto): Promise<loginResponseDto> {
     try {
       const user = await this.usersRepository.findOne({ where: { email: loginUserDto.email } });
 
@@ -135,14 +114,7 @@ export class UsersService {
           expiresIn: "1h"
         });
 
-        return {
-          success: true,
-          message: "User logged in",
-          data: {
-            accessToken: token
-          },
-          error: null
-        };
+        return { accessToken: token, id: user.id, message: "Login successfully" };
       } else {
         throw new Unauthorized("Invalid credentials");
       }
@@ -158,7 +130,7 @@ export class UsersService {
     }
   }
 
-  async remove(id: string): Promise<ResponseAPi> {
+  async remove(id: string): Promise<deleteUserResponse> {
     try {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
 
@@ -168,10 +140,8 @@ export class UsersService {
 
       await this.usersRepository.delete(existingUser.id);
       return {
-        success: true,
-        message: "User deleted",
-        data: null,
-        error: null
+        deleteUser: true,
+        message: "User deleted successfully"
       };
     } catch (error) {
       this.logger.error("UsersServices: ", `remove Error: ${error}`);

@@ -48,4 +48,18 @@ export class loginUserDto {
 export class loginResponseDto {
   @Property()
   accessToken: string;
+
+  @Property()
+  id: string;
+
+  @Property
+  message: string;
+}
+
+export class deleteUserResponse {
+  @Property()
+  deleteUser: boolean;
+
+  @Property()
+  message: string;
 }
