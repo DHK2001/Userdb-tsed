@@ -1,7 +1,11 @@
 import { Constant } from "@tsed/di";
-import { NotAcceptable } from "@tsed/exceptions";
+import { NotAcceptable, Unauthorized } from "@tsed/exceptions";
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
 import { Context } from "@tsed/platform-params";
+import * as dotenv from "dotenv";
+import * as jwt from "jsonwebtoken";
+
+dotenv.config();
 
 @Middleware()
 export default class CustomMiddleware implements MiddlewareMethods {
@@ -14,17 +18,27 @@ export default class CustomMiddleware implements MiddlewareMethods {
     }
 
     const method = $ctx.request.method.toUpperCase();
-    if (["GET", "PUT", "DELETE"].includes(method)) {
+    const path = $ctx.request.url;
+
+    if (["GET", "PUT", "DELETE"].includes(method) && path.startsWith("/v1/users")) {
       this.verifyAccessToken($ctx);
     }
   }
 
   verifyAccessToken(ctx: Context) {
-    const token = ctx.request.headers["authorization-token"];
-    if (token) {
-      console.log(`Authorization Token: ${token}`);
-    } else {
-      console.warn("No Authorization Token provided");
+    try {
+      const token = Array.isArray(ctx.request.headers["authorization-token"])
+        ? ctx.request.headers["authorization-token"][0]
+        : ctx.request.headers["authorization-token"];
+      const secretKey = process.env.SECRET_KEY as string;
+
+      if (!token) {
+        throw new Unauthorized("Authorization token is missing");
+      }
+
+      jwt.verify(token, secretKey);
+    } catch (err) {
+      throw new Unauthorized("Authorization token is missing");
     }
   }
 }

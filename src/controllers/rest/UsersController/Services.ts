@@ -131,15 +131,10 @@ export class UsersService {
           email: user.email,
           password: user.password_bcrypt
         };
-        const expirationTime = Math.floor(Date.now() / 1000) + 30; // 30 seconds
-        //const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour
-        var token = jwt.sign(
-          {
-            exp: expirationTime,
-            foo: payloadToken
-          },
-          secretKey ?? ""
-        );
+
+        const token = jwt.sign(payloadToken, secretKey ?? "", {
+          expiresIn: "1h"
+        });
 
         return {
           success: true,
