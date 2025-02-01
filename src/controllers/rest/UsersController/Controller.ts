@@ -14,13 +14,11 @@ export class UsersController {
   @Get("/")
   @Returns(200, ResponseAPi)
   async get(@HeaderParams("authorization-token") token: string) {
-    console.log(`Token received in GET /users: ${token}`);
     return await this.usersService.getAll();
   }
 
   @Get("/:id")
   async getById(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string) {
-    console.log(`Token received in GET /users/:id: ${token}`);
     return await this.usersService.getById(id);
   }
 
@@ -43,14 +41,12 @@ export class UsersController {
     @BodyParams() user: UpdateUserDto,
     @HeaderParams("authorization-token") token: string
   ): Promise<ResponseAPi> {
-    console.log(`Token received in PUT /users/:id: ${token}`);
     return await this.usersService.update(id, user);
   }
 
   @Delete("/:id")
   @Returns(200, ResponseAPi)
   async remove(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string) {
-    console.log(`Token received in DELETE /users/:id: ${token}`);
     return await this.usersService.remove(id);
   }
 }

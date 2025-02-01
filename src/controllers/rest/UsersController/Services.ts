@@ -124,7 +124,6 @@ export class UsersService {
       const isMatch = await verifyPassword(loginUserDto.password, user.password_bcrypt);
 
       if (isMatch) {
-        console.log("User logged in", process.env.SECRET_KEY);
         const secretKey = process.env.SECRET_KEY;
         const payloadToken = {
           id: user.id,
