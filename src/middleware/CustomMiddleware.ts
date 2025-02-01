@@ -3,7 +3,7 @@ import { NotAcceptable, Unauthorized } from "@tsed/exceptions";
 import { Middleware, MiddlewareMethods } from "@tsed/platform-middlewares";
 import { Context } from "@tsed/platform-params";
 import * as dotenv from "dotenv";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -38,7 +38,7 @@ export default class CustomMiddleware implements MiddlewareMethods {
 
       jwt.verify(token, secretKey);
     } catch (err) {
-      throw new Unauthorized("Authorization token is missing");
+      throw new Unauthorized(err);
     }
   }
 }
