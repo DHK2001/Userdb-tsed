@@ -1,10 +1,10 @@
 import { Controller, Inject } from "@tsed/di";
 import { BodyParams, HeaderParams, PathParams } from "@tsed/platform-params";
 import { Delete, Get, Post, Put, Returns } from "@tsed/schema";
+import { User } from "src/entities/UserEntity.js";
 import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
 import { UsersService } from "./Services.js";
-import { User } from "src/entities/UserEntity.js";
 
 @Controller("/users")
 export class UsersController {

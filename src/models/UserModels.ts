@@ -52,7 +52,7 @@ export class loginResponseDto {
   @Property()
   id: string;
 
-  @Property
+  @Property()
   message: string;
 }
 
