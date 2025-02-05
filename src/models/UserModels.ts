@@ -50,9 +50,6 @@ export class loginResponseDto {
   accessToken: string;
 
   @Property()
-  id: string;
-
-  @Property()
   message: string;
 }
 

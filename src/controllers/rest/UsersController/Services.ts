@@ -114,7 +114,7 @@ export class UsersService {
           expiresIn: "1h"
         });
 
-        return { accessToken: token, id: user.id, message: "Login successfully" };
+        return { accessToken: token, message: "Login successfully" };
       } else {
         throw new Unauthorized("Invalid credentials");
       }
