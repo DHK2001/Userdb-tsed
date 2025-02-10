@@ -25,9 +25,4 @@ export class Product {
   @Column("int")
   @Required()
   stock!: number;
-
-  @Column()
-  @Required()
-  @Property()
-  sku!: string;
 }
