@@ -2,12 +2,11 @@ import { Controller, Inject } from "@tsed/di";
 import { BodyParams, HeaderParams, PathParams } from "@tsed/platform-params";
 import { Delete, Get, Post, Put, Returns } from "@tsed/schema";
 import { CreateProductDto, deleteProductResponse, ProductResponse, UpdateProductDto } from "src/models/ProductModels.js";
-import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
 import { ProducstService } from "./Services.js";
 
 @Controller("/products")
-export class UsersController {
+export class ProductController {
   @Inject()
   private readonly productsService: ProducstService;
 
@@ -24,8 +23,11 @@ export class UsersController {
 
   @Post()
   @Returns(201, ProductResponse)
-  async create(@BodyParams() createProduct: CreateProductDto): Promise<ProductResponse> {
-    return await this.productsService.createUser(createProduct);
+  async create(
+    @BodyParams() createProduct: CreateProductDto,
+    @HeaderParams("authorization-token") token: string
+  ): Promise<ProductResponse> {
+    return await this.productsService.createProduct(createProduct);
   }
 
   @Put("/:id")

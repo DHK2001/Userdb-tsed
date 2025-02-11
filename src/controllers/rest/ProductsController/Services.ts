@@ -1,14 +1,10 @@
 import { Inject, Injectable } from "@tsed/di";
-import { BadRequest, NotFound, Unauthorized } from "@tsed/exceptions";
+import { BadRequest, NotFound } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import * as dotenv from "dotenv";
-import jwt from "jsonwebtoken";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
 import { Product } from "src/entities/ProductEntity.js";
-import { User } from "src/entities/UserEntity.js";
 import { CreateProductDto, deleteProductResponse, ProductResponse, UpdateProductDto } from "src/models/ProductModels.js";
-import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
-import { converBcryptPassword, verifyPassword } from "src/utils/helpers.js";
 import { DataSource, Repository } from "typeorm";
 
 dotenv.config();
@@ -57,10 +53,10 @@ export class ProducstService {
     }
   }
 
-  async createUser(CreateProductDto: CreateProductDto): Promise<ProductResponse> {
+  async createProduct(CreateProductDto: CreateProductDto): Promise<ProductResponse> {
     try {
-      const userSave = await this.productRepository.save(CreateProductDto);
-      return userSave;
+      const productSave = await this.productRepository.save(CreateProductDto);
+      return productSave;
     } catch (error) {
       this.logger.error("UsersServices: ", `createUser Error: ${error}`);
       throw new BadRequest("An error occurred while fetching the user");

@@ -19,11 +19,17 @@ export class CreateProductDto {
 export class UpdateProductDto {
   @MinLength(3)
   @MaxLength(100)
-  name?: string;
+  @Required()
+  name: string;
 
-  description?: string;
-  price?: number;
-  stock?: number;
+  @Required()
+  description: string;
+
+  @Required()
+  price: number;
+  
+  @Required()
+  stock: number;
 }
 
 export class ProductResponse {

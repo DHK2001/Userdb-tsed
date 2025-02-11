@@ -22,7 +22,7 @@ export default class CustomMiddleware implements MiddlewareMethods {
 
     if (["GET", "PUT", "DELETE"].includes(method) && path.startsWith("/v1/users")) {
       this.verifyAccessToken($ctx);
-    } else if (path.startsWith("/v1/products") && path.startsWith("/v1/orders")) {
+    } else if (path.startsWith("/v1/products") || path.startsWith("/v1/orders")) {
       this.verifyAccessToken($ctx);
     }
   }
