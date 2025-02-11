@@ -1,8 +1,6 @@
 import { Email, MaxLength, MinLength, Property, Required } from "@tsed/schema";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-import { Order } from "./OrderEntity.js";
-
 export enum RoleType {
   USER = "USER",
   ADMIN = "ADMIN"

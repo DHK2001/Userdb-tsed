@@ -2,41 +2,44 @@ import { Property, Required } from "@tsed/schema";
 
 export class CreateOrderDto {
   @Required()
-  userId: string;
+  userId!: string;
 
   @Required()
-  products: { productId: string; quantity: number }[];
+  productDetails!: { productId: string; quantity: number }[];
 
   @Required()
-  totalAmount: number;
-
-  @Required()
-  orderDate: Date;
+  totalAmount!: number;
 }
 
 export class UpdateOrderDto {
-  userId?: string;
+  @Required()
+  productDetails!: { productId: string; quantity: number }[];
 
-  products?: { productId: string; quantity: number }[];
-
-  totalAmount?: number;
-
-  orderDate?: Date;
+  @Required()
+  totalAmount!: number;
 }
 
 export class OrderResponse {
   @Property()
-  id: string;
+  id!: string;
 
   @Property()
-  userId: string;
+  userId!: string;
 
   @Property()
-  products: { productId: string; quantity: number }[];
+  productDetails!: { productId: string; quantity: number }[];
 
   @Property()
-  totalAmount: number;
+  totalAmount!: number;
 
   @Property()
-  orderDate: Date;
+  orderDate!: Date;
+}
+
+export class DeleteOrderResponse {
+  @Property()
+  deleted!: boolean;
+
+  @Property()
+  message!: string;
 }

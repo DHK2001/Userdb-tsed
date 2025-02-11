@@ -31,25 +31,25 @@ export class ProducstService {
       return users;
     } catch (error) {
       this.logger.error("UsersServices: ", `getAll Error: ${error}`);
-      throw new BadRequest("An error occurred while fetching all users");
+      throw new BadRequest("An error occurred while fetching all products");
     }
   }
 
   async getById(id: string): Promise<ProductResponse> {
     try {
-      const user = await this.productRepository.findOne({ where: { id } });
+      const product = await this.productRepository.findOne({ where: { id } });
 
-      if (!user) {
-        throw new NotFound("User not found");
+      if (!product) {
+        throw new NotFound("Product not found");
       }
 
-      return user;
+      return product;
     } catch (error) {
       this.logger.error("UsersServices: ", `getById Error: ${error}`);
       if (error instanceof NotFound) {
-        throw new NotFound("User not found");
+        throw new NotFound("Product not found");
       }
-      throw new BadRequest("An error occurred while fetching the user");
+      throw new BadRequest("An error occurred while fetching the product");
     }
   }
 
@@ -59,7 +59,7 @@ export class ProducstService {
       return productSave;
     } catch (error) {
       this.logger.error("UsersServices: ", `createUser Error: ${error}`);
-      throw new BadRequest("An error occurred while fetching the user");
+      throw new BadRequest("An error occurred while fetching the ptoduct");
     }
   }
 
@@ -68,7 +68,7 @@ export class ProducstService {
       const existingProduct = await this.productRepository.findOne({ where: { id } });
 
       if (!existingProduct) {
-        throw new NotFound("User not found");
+        throw new NotFound("Product not found");
       }
 
       const updatedUser = this.productRepository.merge(existingProduct, product);
@@ -77,9 +77,9 @@ export class ProducstService {
     } catch (error) {
       this.logger.error("UsersServices: ", `update Error: ${error}`);
       if (error instanceof NotFound) {
-        throw new NotFound("User not found");
+        throw new NotFound("Product not found");
       }
-      throw new BadRequest("An error occurred while fetching the user");
+      throw new BadRequest("An error occurred while fetching the product");
     }
   }
 
@@ -88,20 +88,20 @@ export class ProducstService {
       const existingUser = await this.productRepository.findOne({ where: { id } });
 
       if (!existingUser) {
-        throw new NotFound("User not found");
+        throw new NotFound("Product not found");
       }
 
       await this.productRepository.delete(existingUser.id);
       return {
         deleteUser: true,
-        message: "User deleted successfully"
+        message: "Product deleted successfully"
       };
     } catch (error) {
       this.logger.error("UsersServices: ", `remove Error: ${error}`);
       if (error instanceof NotFound) {
-        throw new NotFound("User not found");
+        throw new NotFound("Procut not found");
       }
-      throw new BadRequest("An error occurred while fetching the user");
+      throw new BadRequest("An error occurred while fetching the product");
     }
   }
 }

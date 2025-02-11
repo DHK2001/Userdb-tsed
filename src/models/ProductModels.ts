@@ -27,7 +27,7 @@ export class UpdateProductDto {
 
   @Required()
   price: number;
-  
+
   @Required()
   stock: number;
 }
