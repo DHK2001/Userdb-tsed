@@ -42,3 +42,11 @@ export class ProductResponse {
   @Property()
   stock: number;
 }
+
+export class deleteProductResponse {
+  @Property()
+  deleteUser: boolean;
+
+  @Property()
+  message: string;
+}
