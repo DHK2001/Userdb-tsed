@@ -19,10 +19,6 @@ export class Order {
   @JoinTable()
   products!: Product[];
 
-  @Column("nvarchar", { length: 100 })
-  @Required()
-  productDetails!: { productId: string; quantity: number }[];
-
   @Column("decimal", { precision: 10, scale: 2 })
   @Required()
   totalAmount!: number;

@@ -32,11 +32,11 @@ export class OrderService {
 
   async getAll(): Promise<OrderResponse[]> {
     try {
-      const orders = await this.orderRepository.find({ relations: ["user"] });
+      const orders = await this.orderRepository.find({ relations: ["user", "products"] });
       return orders.map((order) => ({
         id: order.id,
         userId: order.user.id,
-        productDetails: order.productDetails,
+        products: order.products,
         totalAmount: order.totalAmount,
         orderDate: order.orderDate
       }));
@@ -48,14 +48,14 @@ export class OrderService {
 
   async getById(id: string): Promise<OrderResponse> {
     try {
-      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user"] });
+      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user", "products"] });
       if (!order) {
         throw new NotFound("Order not found");
       }
       return {
         id: order.id,
         userId: order.user.id,
-        productDetails: order.productDetails,
+        products: order.products,
         totalAmount: order.totalAmount,
         orderDate: order.orderDate
       };
@@ -73,7 +73,7 @@ export class OrderService {
       }
 
       const products = await Promise.all(
-        createOrderDto.productDetails.map(async ({ productId }) => {
+        createOrderDto.products.map(async (productId: string) => {
           const product = await this.productRepository.findOne({ where: { id: productId } });
           if (!product) {
             throw new NotFound(`Product with id ${productId} not found`);
@@ -81,19 +81,17 @@ export class OrderService {
           return product;
         })
       );
-
       const order = this.orderRepository.create({
         user,
         products,
-        productDetails: createOrderDto.productDetails,
         totalAmount: createOrderDto.totalAmount
       });
-
+      console.log("antes", order);
       const savedOrder = await this.orderRepository.save(order);
       return {
         id: savedOrder.id,
         userId: savedOrder.user.id,
-        productDetails: savedOrder.productDetails,
+        products: savedOrder.products,
         totalAmount: savedOrder.totalAmount,
         orderDate: savedOrder.orderDate
       };
@@ -105,13 +103,23 @@ export class OrderService {
 
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<OrderResponse> {
     try {
-      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user"] });
+      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user", "products"] });
       if (!order) {
         throw new NotFound("Order not found");
       }
 
+      const products = await Promise.all(
+        updateOrderDto.products.map(async (productId: string) => {
+          const product = await this.productRepository.findOne({ where: { id: productId } });
+          if (!product) {
+            throw new NotFound(`Product with id ${productId} not found`);
+          }
+          return product;
+        })
+      );
+
       const updatedOrder = this.orderRepository.merge(order, {
-        productDetails: updateOrderDto.productDetails,
+        products,
         totalAmount: updateOrderDto.totalAmount
       });
 
@@ -119,7 +127,7 @@ export class OrderService {
       return {
         id: savedOrder.id,
         userId: savedOrder.user.id,
-        productDetails: savedOrder.productDetails,
+        products: savedOrder.products,
         totalAmount: savedOrder.totalAmount,
         orderDate: savedOrder.orderDate
       };

@@ -34,7 +34,6 @@ export class CreateTables1739198825037 implements MigrationInterface {
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='D_Order' AND xtype='U')
       CREATE TABLE "D_Order" (
         "id" uniqueidentifier NOT NULL CONSTRAINT "DF_e3355675d6ba92124ea2f4f7fc8" DEFAULT NEWSEQUENTIALID(),
-        "productDetails" nvarchar(max) NOT NULL,
         "totalAmount" decimal(10,2) NOT NULL,
         "orderDate" datetime2 NOT NULL CONSTRAINT "DF_4028292ac790292568133d908ff" DEFAULT getdate(),
         "userId" uniqueidentifier,
