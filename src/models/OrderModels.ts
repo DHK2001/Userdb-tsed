@@ -1,23 +1,16 @@
 import { Property, Required } from "@tsed/schema";
-import { Product } from "src/entities/ProductEntity.js";
 
 export class CreateOrderDto {
   @Required()
   userId!: string;
 
   @Required()
-  products!: String[];
-
-  @Required()
-  totalAmount!: number;
+  products!: { id: string; amount: number }[];
 }
 
 export class UpdateOrderDto {
   @Required()
-  products!: String[];
-
-  @Required()
-  totalAmount!: number;
+  products!: { id: string; amount: number }[];
 }
 
 export class OrderResponse {
@@ -28,7 +21,7 @@ export class OrderResponse {
   userId!: string;
 
   @Property()
-  products!: Product[];
+  products!: { id: string; name: string; amount: number }[];
 
   @Property()
   totalAmount!: number;

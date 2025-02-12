@@ -46,6 +46,7 @@ export class CreateTables1739198825037 implements MigrationInterface {
       CREATE TABLE "d_order_products_d_product" (
         "dOrderId" uniqueidentifier NOT NULL,
         "dProductId" uniqueidentifier NOT NULL,
+        "amount" decimal(10,2) NOT NULL,
         CONSTRAINT "PK_11d12b19aa5254037d6b967fc65" PRIMARY KEY ("dOrderId", "dProductId")
       )
     `);

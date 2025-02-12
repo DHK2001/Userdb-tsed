@@ -25,4 +25,5 @@ export class Product {
   @Column("int")
   @Required()
   stock!: number;
+  orders: any;
 }
