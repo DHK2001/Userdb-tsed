@@ -150,58 +150,94 @@ export class OrderService {
 
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<OrderResponse> {
     try {
-      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user", "products"] });
+      const order = await this.orderRepository.findOne({ where: { id }, relations: ["user"] });
       if (!order) {
         throw new NotFound("Order not found");
       }
 
-      const updatedProducts = await Promise.all(
-        updateOrderDto.products.map(async (productDto) => {
-          const product = await this.productRepository.findOne({ where: { id: productDto.id } });
-          if (!product) {
-            throw new NotFound(`Product with id ${productDto.id} not found`);
+      const currentOrderProducts = await this.orderProductRepository.find({ where: { orderId: order.id } });
+      const updatedProducts = updateOrderDto.products;
+
+      let newTotalAmount = 0;
+
+      await Promise.all(
+        updatedProducts.map(async (productDto) => {
+          const currentProduct = currentOrderProducts.find((p) => p.productId === productDto.id);
+
+          if (currentProduct) {
+            if (productDto.amount === 0) {
+              await this.orderProductRepository.delete({ orderId: order.id, productId: productDto.id });
+              const product = await this.productRepository.findOne({ where: { id: productDto.id } });
+              if (product) {
+                product.stock += currentProduct.amount;
+                await this.productRepository.save(product);
+              }
+            } else {
+              const difference = productDto.amount - currentProduct.amount;
+              if (productDto.amount < 0) {
+                throw new BadRequest("Amount cannot be negative");
+              }
+              const product = await this.productRepository.findOne({ where: { id: productDto.id } });
+              if (product) {
+                if (difference > 0) {
+                  if (product.stock < difference) {
+                    throw new BadRequest(`Insufficient stock for product ${product.name}`);
+                  }
+                  product.stock -= difference;
+                } else {
+                  product.stock += Math.abs(difference);
+                }
+                await this.productRepository.save(product);
+              }
+
+              currentProduct.amount = productDto.amount;
+              await this.orderProductRepository.save(currentProduct);
+            }
+          } else {
+            if (productDto.amount > 0) {
+              const product = await this.productRepository.findOne({ where: { id: productDto.id } });
+              if (!product) {
+                throw new NotFound(`Product with id ${productDto.id} not found`);
+              }
+
+              if (product.stock < productDto.amount) {
+                throw new BadRequest(`Insufficient stock for product ${product.name}`);
+              }
+
+              await this.orderProductRepository.insert({
+                orderId: order.id,
+                productId: productDto.id,
+                amount: productDto.amount
+              });
+
+              product.stock -= productDto.amount;
+              await this.productRepository.save(product);
+            }
           }
-
-          const existingProductInOrder = order.products.find((p) => p.id === product.id);
-          const previousAmount = existingProductInOrder
-            ? existingProductInOrder.orders.find((op: { order: { id: string } }) => op.order.id === order.id)?.amount || 0
-            : 0;
-          const stockAdjustment = productDto.amount - previousAmount;
-
-          if (product.stock < stockAdjustment) {
-            throw new BadRequest(`Not enough stock for product: ${product.name}`);
-          }
-
-          product.stock -= stockAdjustment;
-          await this.productRepository.save(product);
-
-          return { ...product, amount: productDto.amount };
         })
       );
+      const updatedOrderProducts = await this.orderProductRepository.find({ where: { orderId: order.id } });
+      newTotalAmount = updatedOrderProducts.reduce((sum, product) => sum + product.amount, 0);
 
-      const totalAmount = updatedProducts.reduce((sum, product) => sum + product.amount, 0);
+      order.totalAmount = newTotalAmount;
+      await this.orderRepository.save(order);
 
-      const updatedOrder = this.orderRepository.merge(order, {
-        products: updatedProducts,
-        totalAmount
-      });
-
-      const savedOrder = await this.orderRepository.save(updatedOrder);
-
-      return {
-        id: savedOrder.id,
-        userId: savedOrder.user.id,
-        products: updatedProducts.map((p) => ({
-          id: p.id,
-          name: p.name,
-          amount: p.amount
+      const orderResponse: OrderResponse = {
+        id: order.id,
+        userId: order.user.id,
+        products: updatedOrderProducts.map((product) => ({
+          id: product.productId,
+          name: order.products.find((p) => p.id === product.productId)?.name || "",
+          amount: product.amount
         })),
-        totalAmount: savedOrder.totalAmount,
-        orderDate: savedOrder.orderDate
+        totalAmount: order.totalAmount,
+        orderDate: order.orderDate
       };
+
+      return orderResponse;
     } catch (error) {
       this.logger.error("OrderService: update Error:", error);
-      throw error instanceof NotFound ? error : new BadRequest("Error updating order");
+      throw error instanceof NotFound || error instanceof BadRequest ? error : new BadRequest("Error updating order");
     }
   }
 
