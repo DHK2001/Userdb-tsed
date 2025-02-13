@@ -239,8 +239,8 @@ export class OrderService {
       if (!order) {
         throw new NotFound("Order not found");
       }
-
       await this.orderRepository.delete(id);
+      await this.orderProductRepository.delete({ orderId: id });
       return { deleted: true, message: "Order deleted successfully" };
     } catch (error) {
       this.logger.error("OrderService: remove Error:", error);
