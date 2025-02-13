@@ -4,6 +4,7 @@ import { Logger } from "@tsed/logger";
 import * as dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
+import { Order } from "src/entities/OrderEntity.js";
 import { User } from "src/entities/UserEntity.js";
 import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 import { converBcryptPassword, verifyPassword } from "src/utils/helpers.js";
@@ -18,10 +19,12 @@ export class UsersService {
   @Inject(MssqlDatasource)
   protected mysqlDataSource: DataSource;
   private usersRepository: Repository<User>;
+  private orderRepository!: Repository<Order>;
 
   async $onInit() {
     if (this.mysqlDataSource.isInitialized) {
       this.usersRepository = this.mysqlDataSource.getRepository(User);
+      this.orderRepository = this.mysqlDataSource.getRepository(Order);
     } else {
       throw new Error("Datasource not connected");
     }
@@ -137,6 +140,16 @@ export class UsersService {
       if (!existingUser) {
         throw new NotFound("User not found");
       }
+
+      const orders = await this.orderRepository.find({
+        relations: ["user", "products"]
+      });
+
+      orders.map((order) => {
+        if (order.user.id === existingUser.id) {
+          throw new BadRequest("User has orders, cannot be deleted");
+        }
+      });
 
       await this.usersRepository.delete(existingUser.id);
       return {
