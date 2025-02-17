@@ -141,13 +141,17 @@ export class UsersService {
         throw new NotFound("User not found");
       }
 
-      const orders = await this.orderRepository.find({ where: { finalized: true }, relations: ["user", "products"] });
+      const whereConditions: any = { user: { id } };
+      whereConditions.finalized = false;
 
-      orders.map((order) => {
-        if (order.user.id === existingUser.id) {
-          throw new BadRequest("User has orders without finalized, cannot be deleted");
-        }
+      const orders = await this.orderRepository.find({
+        where: whereConditions,
+        relations: ["user", "products"]
       });
+
+      if (orders.length > 0) {
+        throw new BadRequest("User has orders without finalized, cannot be soft deleted");
+      }
 
       await this.usersRepository.softDelete(existingUser.id);
       return {
@@ -171,13 +175,16 @@ export class UsersService {
         throw new NotFound("User not found");
       }
 
-      const orders = await this.orderRepository.find({ where: { finalized: true }, relations: ["user", "products"] });
+      const whereConditions: any = { user: { id } };
 
-      orders.map((order) => {
-        if (order.user.id === existingUser.id) {
-          throw new BadRequest("User has orders without finalized, cannot be deleted");
-        }
+      const orders = await this.orderRepository.find({
+        where: whereConditions,
+        relations: ["user", "products"]
       });
+
+      if (orders.length > 0) {
+        throw new BadRequest("User has orders, cannot be deleted");
+      }
 
       await this.usersRepository.delete(existingUser.id);
       return {

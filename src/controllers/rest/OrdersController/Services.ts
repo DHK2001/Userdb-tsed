@@ -39,19 +39,21 @@ export class OrderService {
         relations: ["user", "products"]
       });
       var orderResponse: OrderResponse[] = [];
+      console.log("ord3ers", orders);
       await Promise.all(
         orders.map(async (order) => {
           const products = await this.orderProductRepository.find({ where: { orderId: order.id } });
           orderResponse.push({
             id: order.id,
-            userId: order.user.id,
+            userId: order.user === null ? "User Deleted" : order.user.id,
             products: products.map((product) => ({
               id: product.productId,
               name: order.products.find((p) => p.id === product.productId)?.name || "",
               amount: product.amount
             })),
             totalAmount: order.totalAmount,
-            orderDate: order.orderDate
+            orderDate: order.orderDate,
+            finalized: order.finalized
           });
         })
       );
@@ -96,7 +98,8 @@ export class OrderService {
               amount: product.amount
             })),
             totalAmount: order.totalAmount,
-            orderDate: order.orderDate
+            orderDate: order.orderDate,
+            finalized: order.finalized
           };
         })
       );
@@ -116,14 +119,15 @@ export class OrderService {
       const products = await this.orderProductRepository.find({ where: { orderId: order.id } });
       return {
         id: order.id,
-        userId: order.user.id,
+        userId: order.user === null ? "User Deleted" : order.user.id,
         products: products.map((product) => ({
           id: product.productId,
           name: order.products.find((p) => p.id === product.productId)?.name || "",
           amount: product.amount
         })),
         totalAmount: order.totalAmount,
-        orderDate: order.orderDate
+        orderDate: order.orderDate,
+        finalized: order.finalized
       };
     } catch (error) {
       this.logger.error("OrderService: getById Error:", error);
@@ -182,7 +186,8 @@ export class OrderService {
           amount: product.amount
         })),
         totalAmount: savedOrder.totalAmount,
-        orderDate: savedOrder.orderDate
+        orderDate: savedOrder.orderDate,
+        finalized: savedOrder.finalized
       };
     } catch (error) {
       this.logger.error("OrderService: createOrder Error:", error);
@@ -271,7 +276,8 @@ export class OrderService {
           amount: op.amount
         })),
         totalAmount: existingOrder.totalAmount,
-        orderDate: existingOrder.orderDate
+        orderDate: existingOrder.orderDate,
+        finalized: existingOrder.finalized
       };
     } catch (error) {
       this.logger.error("OrderService: update Error:", error);
@@ -300,6 +306,11 @@ export class OrderService {
       if (!order) {
         throw new NotFound("Order not found");
       }
+
+      if (order.finalized) {
+        throw new BadRequest("Order already finalized");
+      }
+
       order.finalized = true;
       await this.orderRepository.save(order);
       return { finilized: true, message: "Order finalized successfully" };

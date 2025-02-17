@@ -53,9 +53,15 @@ export class ProducstService {
     }
   }
 
-  async createProduct(CreateProductDto: CreateProductDto): Promise<ProductResponse> {
+  async createProduct(createProductDto: CreateProductDto): Promise<ProductResponse> {
     try {
-      const productSave = await this.productRepository.save(CreateProductDto);
+      const product = await this.productRepository.findOne({ where: { name: createProductDto.name } });
+
+      if (product) {
+        throw new BadRequest("Product already exists");
+      }
+
+      const productSave = await this.productRepository.save(createProductDto);
       return productSave;
     } catch (error) {
       this.logger.error("UsersServices: ", `createUser Error: ${error}`);

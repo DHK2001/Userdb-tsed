@@ -28,6 +28,9 @@ export class OrderResponse {
 
   @Property()
   orderDate!: Date;
+
+  @Property()
+  finalized!: boolean;
 }
 
 export class DeleteOrderResponse {

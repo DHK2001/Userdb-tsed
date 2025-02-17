@@ -18,8 +18,12 @@ export class OrderController {
 
   @Get("/ordersUser/:userId")
   @Returns(200, OrderResponse)
-  async getOrdersUser(@HeaderParams("authorization-token") token: string, @QueryParams("finalized") finalized?: boolean) {
-    return await this.ordersService.getByUserId(token, finalized);
+  async getOrdersUser(
+    @PathParams("userId") userId: string,
+    @HeaderParams("authorization-token") token: string,
+    @QueryParams("finalized") finalized?: boolean
+  ) {
+    return await this.ordersService.getByUserId(userId, finalized);
   }
 
   @Get("/:id")
