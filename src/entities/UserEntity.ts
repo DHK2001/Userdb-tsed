@@ -1,5 +1,5 @@
 import { Email, MaxLength, MinLength, Property, Required } from "@tsed/schema";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 export enum RoleType {
   USER = "USER",
@@ -37,4 +37,7 @@ export class User {
   @CreateDateColumn()
   @Required()
   creationDate!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

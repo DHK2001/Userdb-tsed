@@ -37,3 +37,11 @@ export class DeleteOrderResponse {
   @Property()
   message!: string;
 }
+
+export class FinalizedOrderResponse {
+  @Property()
+  finilized!: boolean;
+
+  @Property()
+  message!: string;
+}

@@ -6,7 +6,7 @@ import { Order } from "src/entities/OrderEntity.js";
 import { OrderProduct } from "src/entities/OrderProduct.js";
 import { Product } from "src/entities/ProductEntity.js";
 import { User } from "src/entities/UserEntity.js";
-import { CreateOrderDto, DeleteOrderResponse, OrderResponse, UpdateOrderDto } from "src/models/OrderModels.js";
+import { CreateOrderDto, DeleteOrderResponse, FinalizedOrderResponse, OrderResponse, UpdateOrderDto } from "src/models/OrderModels.js";
 import { DataSource, Repository } from "typeorm";
 
 @Injectable()
@@ -62,6 +62,48 @@ export class OrderService {
     } catch (error) {
       this.logger.error("OrderService: getAll Error:", error);
       throw new BadRequest("Error fetching orders");
+    }
+  }
+
+  async getByUserId(userId: string, finalized?: boolean): Promise<OrderResponse[]> {
+    try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFound("User not found");
+      }
+
+      const whereConditions: any = { user: { id: userId } };
+      if (finalized !== undefined) {
+        whereConditions.finalized = finalized;
+      }
+
+      const orders = await this.orderRepository.find({
+        where: whereConditions,
+        relations: ["user", "products"]
+      });
+
+      const orderResponse: OrderResponse[] = await Promise.all(
+        orders.map(async (order) => {
+          const products = await this.orderProductRepository.find({
+            where: { orderId: order.id }
+          });
+          return {
+            id: order.id,
+            userId: order.user.id,
+            products: products.map((product) => ({
+              id: product.productId,
+              name: order.products.find((p) => p.id === product.productId)?.name || "",
+              amount: product.amount
+            })),
+            totalAmount: order.totalAmount,
+            orderDate: order.orderDate
+          };
+        })
+      );
+      return orderResponse;
+    } catch (error) {
+      this.logger.error("OrderService: getByUserId Error:", error);
+      throw error instanceof NotFound ? error : new BadRequest("Error fetching orders");
     }
   }
 
@@ -159,6 +201,10 @@ export class OrderService {
         throw new NotFound("Order not found");
       }
 
+      if (existingOrder.finalized) {
+        throw new BadRequest("Order already finalized");
+      }
+
       const existingOrderProducts = await this.orderProductRepository.find({ where: { orderId: existingOrder.id } });
       const updateProductMap = new Map(updateOrderDto.products.map((p) => [p.id, p.amount]));
 
@@ -245,6 +291,21 @@ export class OrderService {
     } catch (error) {
       this.logger.error("OrderService: remove Error:", error);
       throw error instanceof NotFound ? error : new BadRequest("Error deleting order");
+    }
+  }
+
+  async finalize(id: string): Promise<FinalizedOrderResponse> {
+    try {
+      const order = await this.orderRepository.findOne({ where: { id } });
+      if (!order) {
+        throw new NotFound("Order not found");
+      }
+      order.finalized = true;
+      await this.orderRepository.save(order);
+      return { finilized: true, message: "Order finalized successfully" };
+    } catch (error) {
+      this.logger.error("OrderService: finalize Error:", error);
+      throw error instanceof NotFound ? error : new BadRequest("Error finalizing order");
     }
   }
 }

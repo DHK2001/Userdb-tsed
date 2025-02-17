@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@tsed/di";
 import { BodyParams, HeaderParams, PathParams } from "@tsed/platform-params";
-import { Delete, Get, Post, Put, Returns } from "@tsed/schema";
+import { Delete, Get, Patch, Post, Put, Returns } from "@tsed/schema";
 import { User } from "src/entities/UserEntity.js";
 import { CreateUserDto, deleteUserResponse, loginResponseDto, loginUserDto, UpdateUserDto } from "src/models/UserModels.js";
 
@@ -42,6 +42,12 @@ export class UsersController {
     @HeaderParams("authorization-token") token: string
   ): Promise<User> {
     return await this.usersService.update(id, user);
+  }
+
+  @Patch("/:id")
+  @Returns(200, deleteUserResponse)
+  async softDelete(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string): Promise<deleteUserResponse> {
+    return await this.usersService.softDelete(id);
   }
 
   @Delete("/:id")

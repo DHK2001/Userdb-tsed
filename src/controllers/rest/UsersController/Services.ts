@@ -133,6 +133,36 @@ export class UsersService {
     }
   }
 
+  async softDelete(id: string): Promise<deleteUserResponse> {
+    try {
+      const existingUser = await this.usersRepository.findOne({ where: { id } });
+
+      if (!existingUser) {
+        throw new NotFound("User not found");
+      }
+
+      const orders = await this.orderRepository.find({ where: { finalized: true }, relations: ["user", "products"] });
+
+      orders.map((order) => {
+        if (order.user.id === existingUser.id) {
+          throw new BadRequest("User has orders without finalized, cannot be deleted");
+        }
+      });
+
+      await this.usersRepository.softDelete(existingUser.id);
+      return {
+        deleteUser: true,
+        message: "User deleted successfully"
+      };
+    } catch (error) {
+      this.logger.error("UsersServices: ", `softDelete Error: ${error}`);
+      if (error instanceof NotFound) {
+        throw new NotFound("User not found");
+      }
+      throw new BadRequest("An error occurred while fetching the user");
+    }
+  }
+
   async remove(id: string): Promise<deleteUserResponse> {
     try {
       const existingUser = await this.usersRepository.findOne({ where: { id } });
@@ -141,13 +171,11 @@ export class UsersService {
         throw new NotFound("User not found");
       }
 
-      const orders = await this.orderRepository.find({
-        relations: ["user", "products"]
-      });
+      const orders = await this.orderRepository.find({ where: { finalized: true }, relations: ["user", "products"] });
 
       orders.map((order) => {
         if (order.user.id === existingUser.id) {
-          throw new BadRequest("User has orders, cannot be deleted");
+          throw new BadRequest("User has orders without finalized, cannot be deleted");
         }
       });
 

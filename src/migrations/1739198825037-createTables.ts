@@ -25,6 +25,7 @@ export class CreateTables1739198825037 implements MigrationInterface {
         "email" nvarchar(255) NOT NULL,
         "password_bcrypt" nvarchar(255) NOT NULL,
         "creationDate" datetime2 NOT NULL CONSTRAINT "DF_bf316873be0b80fda94489a01e0" DEFAULT getdate(),
+        "deletedAt" datetime2 NULL,
         CONSTRAINT "UQ_88ab410e086ea166e0591c6b7d0" UNIQUE ("email"),
         CONSTRAINT "PK_c3fda85dfadc954a635d44d0a23" PRIMARY KEY ("id")
       )
@@ -37,6 +38,7 @@ export class CreateTables1739198825037 implements MigrationInterface {
         "totalAmount" decimal(10,2) NOT NULL,
         "orderDate" datetime2 NOT NULL CONSTRAINT "DF_4028292ac790292568133d908ff" DEFAULT getdate(),
         "userId" uniqueidentifier,
+        "finalized" bit NOT NULL CONSTRAINT "DF_D_Order_finalized" DEFAULT 0,
         CONSTRAINT "PK_e3355675d6ba92124ea2f4f7fc8" PRIMARY KEY ("id")
       )
     `);

@@ -26,4 +26,7 @@ export class Order {
   @CreateDateColumn()
   @Required()
   orderDate!: Date;
+
+  @Column({ default: false })
+  finalized: boolean;
 }
