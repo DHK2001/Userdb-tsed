@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@tsed/di";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, Conflict, NotFound } from "@tsed/exceptions";
 import { Logger } from "@tsed/logger";
 import * as dotenv from "dotenv";
 import { MssqlDatasource } from "src/datasources/MssqlDatasource.js";
@@ -58,7 +58,7 @@ export class ProducstService {
       const product = await this.productRepository.findOne({ where: { name: createProductDto.name } });
 
       if (product) {
-        throw new BadRequest("Product already exists");
+        throw new Conflict("Product already exists");
       }
 
       const productSave = await this.productRepository.save(createProductDto);
