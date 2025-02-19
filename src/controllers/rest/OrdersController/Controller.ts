@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@tsed/di";
 import { BodyParams, HeaderParams, PathParams, QueryParams } from "@tsed/platform-params";
-import { Delete, Get, Post, Put, Returns } from "@tsed/schema";
+import { Delete, Get, Patch, Post, Put, Returns } from "@tsed/schema";
 import { CreateOrderDto, DeleteOrderResponse, FinalizedOrderResponse, OrderResponse, UpdateOrderDto } from "src/models/OrderModels.js";
 
 import { OrderService } from "./Services.js";
@@ -53,7 +53,7 @@ export class OrderController {
     return await this.ordersService.remove(id);
   }
 
-  @Put("/:id/finalize")
+  @Patch("/:id/finalize")
   @Returns(200, FinalizedOrderResponse)
   async finalize(@PathParams("id") id: string, @HeaderParams("authorization-token") token: string): Promise<FinalizedOrderResponse> {
     return await this.ordersService.finalize(id);
