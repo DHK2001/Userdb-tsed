@@ -39,7 +39,6 @@ export class OrderService {
         relations: ["user", "products"]
       });
       var orderResponse: OrderResponse[] = [];
-      console.log("ord3ers", orders);
       await Promise.all(
         orders.map(async (order) => {
           const products = await this.orderProductRepository.find({ where: { orderId: order.id } });
@@ -210,70 +209,83 @@ export class OrderService {
         throw new BadRequest("Order already finalized");
       }
 
-      const existingOrderProducts = await this.orderProductRepository.find({ where: { orderId: existingOrder.id } });
-      const updateProductMap = new Map(updateOrderDto.products.map((p) => [p.id, p.amount]));
+      var totalAmount = 0;
 
-      for (const orderProduct of existingOrderProducts) {
-        const newAmount = updateProductMap.get(orderProduct.productId);
-
-        if (newAmount === undefined) {
-          const product = await this.productRepository.findOne({ where: { id: orderProduct.productId } });
-          if (product) {
-            product.stock += orderProduct.amount;
+      await Promise.all(
+        existingOrder.products.map(async (product) => {
+          const exists = updateOrderDto.products.some((productUp) => productUp.id === product.id);
+          if (!exists) {
+            const orderProduct = await this.orderProductRepository.findOne({
+              where: { orderId: existingOrder.id, productId: product.id }
+            });
+            product.stock += orderProduct?.amount ?? 0;
             await this.productRepository.save(product);
+
+            await this.orderProductRepository.delete({
+              orderId: existingOrder.id,
+              productId: product.id
+            });
           }
-          await this.orderProductRepository.delete(orderProduct);
-        } else {
-          const amountDiff = newAmount - orderProduct.amount;
-          const product = await this.productRepository.findOne({ where: { id: orderProduct.productId } });
-          if (product) {
-            product.stock -= amountDiff;
-            if (product.stock < 0) {
-              throw new BadRequest(`Insufficient stock for product ${product.name}`);
+        })
+      );
+
+      var products = await Promise.all(
+        updateOrderDto.products.map(async (productDto) => {
+          const product = await this.productRepository.findOne({ where: { id: productDto.id } });
+          if (!product) {
+            throw new NotFound(`Product with id ${productDto.id} not found`);
+          }
+          const orderProduct = await this.orderProductRepository.findOne({
+            where: { orderId: existingOrder.id, productId: productDto.id }
+          });
+
+          if (!orderProduct) {
+            if (productDto.amount > 0) {
+              if (product.stock < productDto.amount) {
+                throw new BadRequest(`Insufficient stock for product ${product.name}`);
+              } else {
+                await this.orderProductRepository.insert({
+                  order: existingOrder,
+                  product,
+                  amount: productDto.amount
+                });
+                product.stock -= productDto.amount;
+                await this.productRepository.save(product);
+              }
             }
-            await this.productRepository.save(product);
+          } else {
+            var difference = productDto.amount - orderProduct.amount;
+            if (product.stock < difference) {
+              throw new BadRequest(`Insufficient stock for product ${product.name}`);
+            } else {
+              product.stock -= difference;
+              await this.productRepository.save(product);
+              if (productDto.amount > 0) {
+                orderProduct.amount = productDto.amount;
+                await this.orderProductRepository.save(orderProduct);
+              } else {
+                await this.orderProductRepository.delete({
+                  orderId: existingOrder.id,
+                  productId: productDto.id
+                });
+              }
+            }
           }
-          orderProduct.amount = newAmount;
-          await this.orderProductRepository.save(orderProduct);
-          updateProductMap.delete(orderProduct.productId);
-        }
-      }
-
-      for (const [productId, amount] of updateProductMap.entries()) {
-        const product = await this.productRepository.findOne({ where: { id: productId } });
-        if (!product) {
-          throw new NotFound(`Product with id ${productId} not found`);
-        }
-        if (product.stock < amount) {
-          throw new BadRequest(`Insufficient stock for product ${product.name}`);
-        }
-
-        product.stock -= amount;
-        await this.productRepository.save(product);
-
-        await this.orderProductRepository.insert({
-          order: existingOrder,
-          product,
-          amount
-        });
-      }
-
-      const updatedOrderProducts = await this.orderProductRepository.find({ where: { orderId: existingOrder.id } });
-      const totalAmount = updatedOrderProducts.reduce((sum, op) => {
-        const product = existingOrder.products.find((p) => p.id === op.productId);
-        return sum + op.amount;
-      }, 0);
-
+          totalAmount += productDto.amount;
+          return { ...product, amount: productDto.amount };
+        })
+      );
+      products = products.filter((product) => product.amount !== 0);
       existingOrder.totalAmount = totalAmount;
+      existingOrder.products = products;
       await this.orderRepository.save(existingOrder);
-
       return {
         id: existingOrder.id,
         userId: existingOrder.user.id,
-        products: updatedOrderProducts.map((op) => ({
-          id: op.productId,
-          name: existingOrder.products.find((p) => p.id === op.productId)?.name || "",
-          amount: op.amount
+        products: products.map((product) => ({
+          id: product.id,
+          name: product.name,
+          amount: product.amount
         })),
         totalAmount: existingOrder.totalAmount,
         orderDate: existingOrder.orderDate,
