@@ -10,6 +10,9 @@ export class CreateProductDto {
   description: string;
 
   @Required()
+  imageUrl: string;
+
+  @Required()
   price: number;
 
   @Required()
@@ -24,6 +27,9 @@ export class UpdateProductDto {
 
   @Required()
   description: string;
+
+  @Required()
+  imageUrl: string;
 
   @Required()
   price: number;
@@ -41,6 +47,9 @@ export class ProductResponse {
 
   @Property()
   description: string;
+
+  @Property()
+  imageUrl: string;
 
   @Property()
   price: number;

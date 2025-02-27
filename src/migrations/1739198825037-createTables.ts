@@ -10,6 +10,7 @@ export class CreateTables1739198825037 implements MigrationInterface {
         "id" uniqueidentifier NOT NULL CONSTRAINT "DF_e1b37c88b3bffe37fc6efcdaa7e" DEFAULT NEWSEQUENTIALID(),
         "name" nvarchar(100) NOT NULL,
         "description" text NOT NULL,
+        "imageUrl" text NOT NULL,
         "price" decimal(10,2) NOT NULL,
         "stock" int NOT NULL,
         CONSTRAINT "PK_e1b37c88b3bffe37fc6efcdaa7e" PRIMARY KEY ("id")

@@ -18,6 +18,10 @@ export class Product {
   @Required()
   description!: string;
 
+  @Column("text")
+  @Required()
+  imageUrl!: string;
+
   @Column("decimal", { precision: 10, scale: 2 })
   @Required()
   price!: number;
